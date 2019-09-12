@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 
 const RouterContext = React.createContext();
 
-function useRouter() {
-  const [hash, setHash] = useState(window.location.hash.replace(/^#\/?|\/$/g, ""))
+
+function Router({ children, location, log }) {
+  console.log(location)
+
+  const [hash, setHash] = useState(location ? location.join() : window.location.hash.replace(/^#\/?|\/$/g, ""))
 
   useEffect(() => {
+    console.log('router')
     hashChange(setHash)
     window.addEventListener("hashchange", () => hashChange(setHash))
     return () => {
@@ -13,18 +17,13 @@ function useRouter() {
     }
   }, [])
 
-  return hash
-}
+  function hashChange() {
+    let hash = window.location.hash.replace(/^#\/?|\/$/g, "")
+    let newHash = hash.split("/")
+    log && console.log(hash)
+    setHash(location ? location.join() : newHash[0])
+  }
 
-function hashChange(setHash) {
-  let hash = window.location.hash.replace(/^#\/?|\/$/g, "")
-  let newHash = hash.split("/")
-  setHash(newHash[0])
-}
-
-function Router({ children }) {
-
-  const hash = useRouter(hashChange)
 
   let defaultElement = React.Children.toArray(children).find(ele => {
     return ele.props.default === true
@@ -36,16 +35,26 @@ function Router({ children }) {
 
   let render = route ? route : defaultElement
 
+
   const goto = (hash) => {
     window.location.hash = hash
   }
 
+  log && console.log(hash, location)
+
+  let newHash = hash.split("/")
+  console.log(newHash)
+  let childHash = newHash.splice(1, newHash.length)
+
+  console.log(childHash)
+
   return (
     <React.Fragment>
       <RouterContext.Provider value={{ goto }}>
-        {React.cloneElement(render, { ...render.props, goto })}
+
+        {render ? React.cloneElement(render, { ...render.props, goto }, render.props.children ? <Router log={true} location={childHash.join()}>{render.props.children}</Router  > : render.props.children) : null}
       </RouterContext.Provider>
-    </React.Fragment>
+    </React.Fragment >
   );
 }
 

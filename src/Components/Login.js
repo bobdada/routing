@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigation } from "../Router"
 import '../App.css';
 
-
 function Login() {
   const goto = useNavigation()
   return (
