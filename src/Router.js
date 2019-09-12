@@ -1,19 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
 
-function Router({ children }) {
-  const [hash, setHash] = useState(null)
+const RouterContext = React.createContext();
 
-  const hashChange = () => {
-    setHash(window.location.hash.replace(/^#\/?|\/$/g, ""))
-  }
+function useRouter() {
+  const [hash, setHash] = useState(window.location.hash.replace(/^#\/?|\/$/g, ""))
 
   useEffect(() => {
-    window.addEventListener("hashchange", hashChange)
+    hashChange(setHash)
+    window.addEventListener("hashchange", () => hashChange(setHash))
     return () => {
-      window.removeEventListener("hashchange", hashChange)
+      window.removeEventListener("hashchange", () => hashChange(setHash))
     }
   }, [])
+
+  return hash
+}
+
+function hashChange(setHash) {
+  let hash = window.location.hash.replace(/^#\/?|\/$/g, "")
+  let newHash = hash.split("/")
+  setHash(newHash[0])
+}
+
+function Router({ children }) {
+
+  const hash = useRouter(hashChange)
 
   let defaultElement = React.Children.toArray(children).find(ele => {
     return ele.props.default === true
@@ -23,11 +34,41 @@ function Router({ children }) {
     return hash === ele.props.path.replace(/(^\/+|\/+$)/g, "")
   })
 
+  let render = route ? route : defaultElement
+
+  const goto = (hash) => {
+    window.location.hash = hash
+  }
+
   return (
     <React.Fragment>
-      {route ? route : defaultElement}
+      <RouterContext.Provider value={{ goto }}>
+        {React.cloneElement(render, { ...render.props, goto })}
+      </RouterContext.Provider>
     </React.Fragment>
   );
 }
 
 export default Router;
+
+export function useNavigation() {
+  const context = React.useContext(RouterContext)
+  return { goto: context.goto }
+}
+
+
+export const withNavigation = (Child) => {
+  return class extends React.Component {
+    render() {
+      return (
+        <RouterContext.Consumer>
+          {
+            ({ goto }) => (
+              <Child goto={goto} />
+            )
+          }
+        </RouterContext.Consumer>
+      )
+    }
+  }
+}
