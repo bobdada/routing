@@ -17,8 +17,10 @@ export function Nav() {
   let { goto } = useNavigation()
   return (
     <div className="nav">
-      <button className="nav_button" onClick={() => goto("/dashboard/home")}>Home</button>
-      <button className="nav_button" onClick={() => goto("/dashboard/chat")}>Chat</button>
+      <button className="nav_button" onClick={() => goto("/home")}>Home</button>
+      <button className="nav_button" onClick={() => goto("/chat")}>Chat</button>
+      <button className="nav_button" onClick={() => goto("/login")}>Login</button>
+      <button className="nav_button" onClick={() => goto("/dashboard")}>Dashboard</button>
     </div>
   )
 }
@@ -65,12 +67,11 @@ function App() {
   return (
     <div className="App">
       <Router>
-        <Dashboard path="/dashboard" >
-          <Chat path="/chat" />
-          <Home path="/home" />
-        </Dashboard>
+        <Dashboard path="/dashboard" />
+        <Chat path="/chat" />
+        <Home path="/home" />
         <Login path="/login" />
-        <NotFound path="/404" default> </NotFound>
+        <NotFound path="/404" default />
       </Router>
     </div>
   );

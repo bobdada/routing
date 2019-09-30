@@ -14,7 +14,7 @@ function Dashboard({ goto, children }) {
         </div>
         <div className="content">
           <h1>This is Dashboard</h1>
-          <button onClick={() => goto("/login")}> Goto Login </button>
+          {/* <button onClick={() => goto("/login")}> Goto Login </button> */}
         </div>
       </div>
       {children}

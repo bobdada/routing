@@ -3,25 +3,25 @@ import React, { useState, useEffect } from 'react';
 const RouterContext = React.createContext();
 
 
-function Router({ children, location, log }) {
-  console.log(location)
+function Router({ children }) {
 
-  const [hash, setHash] = useState(location ? location.join() : window.location.hash.replace(/^#\/?|\/$/g, ""))
+
+  const [hash, setHash] = useState(window.location.hash.replace(/^#\/?|\/$/g, ""))
 
   useEffect(() => {
     console.log('router')
     hashChange(setHash)
-    window.addEventListener("hashchange", () => hashChange(setHash))
+    window.addEventListener("hashchange", () => {
+      hashChange(setHash)
+    })
     return () => {
       window.removeEventListener("hashchange", () => hashChange(setHash))
     }
   }, [])
 
-  function hashChange() {
-    let hash = window.location.hash.replace(/^#\/?|\/$/g, "")
-    let newHash = hash.split("/")
-    log && console.log(hash)
-    setHash(location ? location.join() : newHash[0])
+  function hashChange(setHash) {
+    console.log(hash)
+    setHash(window.location.hash.replace(/^#\/?|\/$/g, ""))
   }
 
 
@@ -34,25 +34,20 @@ function Router({ children, location, log }) {
   })
 
   let render = route ? route : defaultElement
+  console.log(render)
 
 
   const goto = (hash) => {
     window.location.hash = hash
+
   }
 
-  log && console.log(hash, location)
 
-  let newHash = hash.split("/")
-  console.log(newHash)
-  let childHash = newHash.splice(1, newHash.length)
-
-  console.log(childHash)
 
   return (
     <React.Fragment>
       <RouterContext.Provider value={{ goto }}>
-
-        {render ? React.cloneElement(render, { ...render.props, goto }, render.props.children ? <Router log={true} location={childHash.join()}>{render.props.children}</Router  > : render.props.children) : null}
+        {React.cloneElement(render, { ...render.props, goto }, render.props.children)}
       </RouterContext.Provider>
     </React.Fragment >
   );
@@ -64,7 +59,6 @@ export function useNavigation() {
   const context = React.useContext(RouterContext)
   return { goto: context.goto }
 }
-
 
 export const withNavigation = (Child) => {
   return class extends React.Component {
